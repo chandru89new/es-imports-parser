@@ -42,29 +42,26 @@ defaultImportStringParser =
 
 sourceFileParser : Parser String
 sourceFileParser =
-    between
-        (chompIf (\c -> c == '"'))
-        (chompIf (\c -> c == '"'))
-        (chompWhile
-            (\c ->
-                Char.isAlphaNum c || c == '.' || c == '/' || c == '~' || c == '@' || c == '_' || c == '-'
+    oneOf
+        [ between
+            (chompIf (\c -> c == '"'))
+            (chompIf (\c -> c == '"'))
+            (chompWhile
+                (\c ->
+                    Char.isAlphaNum c || c == '.' || c == '/' || c == '~' || c == '@' || c == '_' || c == '-'
+                )
+                |> getChompedString
             )
-            |> getChompedString
-        )
-
-
-
--- |. chompWhile Char.isAlphaNum
-{--chompWhile (\c -> Char.isAlphaNum c || c == '"' || c == '\'')
-        |> getChompedString
-        |> Parser.andThen
-            (\str ->
-                if String.isEmpty str then
-                    problem "I had trouble extracting the source of this import line."
-
-                else
-                    succeed str
-            ) --}
+        , between
+            (chompIf (\c -> c == '\''))
+            (chompIf (\c -> c == '\''))
+            (chompWhile
+                (\c ->
+                    Char.isAlphaNum c || c == '.' || c == '/' || c == '~' || c == '@' || c == '_' || c == '-'
+                )
+                |> getChompedString
+            )
+        ]
 
 
 objectImportStringParser : Parser (List String)
@@ -117,18 +114,26 @@ importsParser =
                 finish entry f =
                     f (entry :: acc)
             in
-            succeed finish
-                |= importLineParser
-                |. spacesOnly
-                |= oneOf
-                    [ succeed Loop
-                        |. symbol "\n"
-                    , succeed
-                        (\parsed ->
-                            Done (List.reverse parsed)
-                        )
-                        |. end
-                    ]
+            oneOf
+                [ succeed finish
+                    |= importLineParser
+                    |. spacesOnly
+                    |= oneOf
+                        [ succeed Loop
+                            |. symbol "\n"
+                        , succeed (Done << List.reverse)
+                            |. symbol "\n\n"
+                        ]
+                , succeed (Done acc)
+                    |. oneOf
+                        [ succeed identity
+                            |. symbol "\n"
+                        , succeed identity
+                            |. symbol "\n\n"
+                        , succeed identity
+                            |. end
+                        ]
+                ]
     in
     loop [] step
 

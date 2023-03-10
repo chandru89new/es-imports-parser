@@ -2966,183 +2966,50 @@ var $author$project$Main$readImportsString = _Platform_outgoingPort('readImports
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
 		1,
-		$author$project$Main$readImportsString('input.txt'));
+		$author$project$Main$readImportsString('inputs.txt'));
 };
-var $author$project$Main$ReceiveImportsString = function (a) {
-	return {$: 'ReceiveImportsString', a: a};
+var $author$project$Main$ReceiveInputs = function (a) {
+	return {$: 'ReceiveInputs', a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$index = _Json_decodeIndex;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$receiveImportsString = _Platform_incomingPort('receiveImportsString', $elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$succeed = _Json_succeed;
+var $author$project$Main$receiveInputs = _Platform_incomingPort(
+	'receiveInputs',
+	A2(
+		$elm$json$Json$Decode$andThen,
+		function (_v0) {
+			return A2(
+				$elm$json$Json$Decode$andThen,
+				function (_v1) {
+					return $elm$json$Json$Decode$succeed(
+						_Utils_Tuple2(_v0, _v1));
+				},
+				A2($elm$json$Json$Decode$index, 1, $elm$json$Json$Decode$string));
+		},
+		A2($elm$json$Json$Decode$index, 0, $elm$json$Json$Decode$string)));
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
-				$author$project$Main$receiveImportsString($author$project$Main$ReceiveImportsString)
+				$author$project$Main$receiveInputs($author$project$Main$ReceiveInputs)
 			]));
 };
-var $elm$json$Json$Decode$succeed = _Json_succeed;
-var $author$project$Main$SaveSortedString = function (a) {
-	return {$: 'SaveSortedString', a: a};
-};
-var $author$project$Main$SortImports = function (a) {
-	return {$: 'SortImports', a: a};
-};
-var $elm$core$Debug$log = _Debug_log;
+var $author$project$Main$logSortedImports = _Platform_outgoingPort('logSortedImports', $elm$json$Json$Encode$string);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $elm$core$Basics$identity = function (x) {
-	return x;
-};
-var $elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var $elm$core$Task$succeed = _Scheduler_succeed;
-var $elm$core$Task$init = $elm$core$Task$succeed(_Utils_Tuple0);
-var $elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
+var $elm$core$Result$andThen = F2(
+	function (callback, result) {
+		if (result.$ === 'Ok') {
+			var value = result.a;
+			return callback(value);
 		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							$elm$core$List$foldl,
-							fn,
-							acc,
-							$elm$core$List$reverse(r4)) : A4($elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
+			var msg = result.a;
+			return $elm$core$Result$Err(msg);
 		}
 	});
-var $elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4($elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var $elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						$elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
-var $elm$core$Task$andThen = _Scheduler_andThen;
-var $elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			$elm$core$Task$andThen,
-			function (a) {
-				return $elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var $elm$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			$elm$core$Task$andThen,
-			function (a) {
-				return A2(
-					$elm$core$Task$andThen,
-					function (b) {
-						return $elm$core$Task$succeed(
-							A2(func, a, b));
-					},
-					taskB);
-			},
-			taskA);
-	});
-var $elm$core$Task$sequence = function (tasks) {
-	return A3(
-		$elm$core$List$foldr,
-		$elm$core$Task$map2($elm$core$List$cons),
-		$elm$core$Task$succeed(_List_Nil),
-		tasks);
-};
-var $elm$core$Platform$sendToApp = _Platform_sendToApp;
-var $elm$core$Task$spawnCmd = F2(
-	function (router, _v0) {
-		var task = _v0.a;
-		return _Scheduler_spawn(
-			A2(
-				$elm$core$Task$andThen,
-				$elm$core$Platform$sendToApp(router),
-				task));
-	});
-var $elm$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			$elm$core$Task$map,
-			function (_v0) {
-				return _Utils_Tuple0;
-			},
-			$elm$core$Task$sequence(
-				A2(
-					$elm$core$List$map,
-					$elm$core$Task$spawnCmd(router),
-					commands)));
-	});
-var $elm$core$Task$onSelfMsg = F3(
-	function (_v0, _v1, _v2) {
-		return $elm$core$Task$succeed(_Utils_Tuple0);
-	});
-var $elm$core$Task$cmdMap = F2(
-	function (tagger, _v0) {
-		var task = _v0.a;
-		return $elm$core$Task$Perform(
-			A2($elm$core$Task$map, tagger, task));
-	});
-_Platform_effectManagers['Task'] = _Platform_createManager($elm$core$Task$init, $elm$core$Task$onEffects, $elm$core$Task$onSelfMsg, $elm$core$Task$cmdMap);
-var $elm$core$Task$command = _Platform_leaf('Task');
-var $elm$core$Task$perform = F2(
-	function (toMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2($elm$core$Task$map, toMessage, task)));
-	});
-var $author$project$Main$saveSortedString = _Platform_outgoingPort('saveSortedString', $elm$json$Json$Encode$string);
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
@@ -3154,6 +3021,11 @@ var $elm$parser$Parser$Done = function (a) {
 var $elm$parser$Parser$Loop = function (a) {
 	return {$: 'Loop', a: a};
 };
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
 var $elm$parser$Parser$ExpectingEnd = {$: 'ExpectingEnd'};
 var $elm$parser$Parser$Advanced$Bad = F2(
 	function (a, b) {
@@ -3163,6 +3035,9 @@ var $elm$parser$Parser$Advanced$Good = F3(
 	function (a, b, c) {
 		return {$: 'Good', a: a, b: b, c: c};
 	});
+var $elm$core$Basics$identity = function (x) {
+	return x;
+};
 var $elm$parser$Parser$Advanced$Parser = function (a) {
 	return {$: 'Parser', a: a};
 };
@@ -3522,6 +3397,75 @@ var $Punie$elm_parser_extras$Parser$Extras$braces = A2(
 	$Punie$elm_parser_extras$Parser$Extras$between,
 	$elm$parser$Parser$symbol('{'),
 	$elm$parser$Parser$symbol('}'));
+var $elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							$elm$core$List$foldl,
+							fn,
+							acc,
+							$elm$core$List$reverse(r4)) : A4($elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var $elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4($elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var $elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						$elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
 var $elm$core$String$replace = F3(
 	function (before, after, string) {
 		return A2(
@@ -3675,37 +3619,72 @@ var $elm$parser$Parser$Advanced$map = F2(
 			});
 	});
 var $elm$parser$Parser$map = $elm$parser$Parser$Advanced$map;
-var $author$project$ImportParser$sourceFileParser = A3(
-	$Punie$elm_parser_extras$Parser$Extras$between,
-	$elm$parser$Parser$chompIf(
-		function (c) {
-			return _Utils_eq(
-				c,
-				_Utils_chr('\"'));
-		}),
-	$elm$parser$Parser$chompIf(
-		function (c) {
-			return _Utils_eq(
-				c,
-				_Utils_chr('\"'));
-		}),
-	$elm$parser$Parser$getChompedString(
-		$elm$parser$Parser$chompWhile(
-			function (c) {
-				return $elm$core$Char$isAlphaNum(c) || (_Utils_eq(
-					c,
-					_Utils_chr('.')) || (_Utils_eq(
-					c,
-					_Utils_chr('/')) || (_Utils_eq(
-					c,
-					_Utils_chr('~')) || (_Utils_eq(
-					c,
-					_Utils_chr('@')) || (_Utils_eq(
-					c,
-					_Utils_chr('_')) || _Utils_eq(
-					c,
-					_Utils_chr('-')))))));
-			})));
+var $author$project$ImportParser$sourceFileParser = $elm$parser$Parser$oneOf(
+	_List_fromArray(
+		[
+			A3(
+			$Punie$elm_parser_extras$Parser$Extras$between,
+			$elm$parser$Parser$chompIf(
+				function (c) {
+					return _Utils_eq(
+						c,
+						_Utils_chr('\"'));
+				}),
+			$elm$parser$Parser$chompIf(
+				function (c) {
+					return _Utils_eq(
+						c,
+						_Utils_chr('\"'));
+				}),
+			$elm$parser$Parser$getChompedString(
+				$elm$parser$Parser$chompWhile(
+					function (c) {
+						return $elm$core$Char$isAlphaNum(c) || (_Utils_eq(
+							c,
+							_Utils_chr('.')) || (_Utils_eq(
+							c,
+							_Utils_chr('/')) || (_Utils_eq(
+							c,
+							_Utils_chr('~')) || (_Utils_eq(
+							c,
+							_Utils_chr('@')) || (_Utils_eq(
+							c,
+							_Utils_chr('_')) || _Utils_eq(
+							c,
+							_Utils_chr('-')))))));
+					}))),
+			A3(
+			$Punie$elm_parser_extras$Parser$Extras$between,
+			$elm$parser$Parser$chompIf(
+				function (c) {
+					return _Utils_eq(
+						c,
+						_Utils_chr('\''));
+				}),
+			$elm$parser$Parser$chompIf(
+				function (c) {
+					return _Utils_eq(
+						c,
+						_Utils_chr('\''));
+				}),
+			$elm$parser$Parser$getChompedString(
+				$elm$parser$Parser$chompWhile(
+					function (c) {
+						return $elm$core$Char$isAlphaNum(c) || (_Utils_eq(
+							c,
+							_Utils_chr('.')) || (_Utils_eq(
+							c,
+							_Utils_chr('/')) || (_Utils_eq(
+							c,
+							_Utils_chr('~')) || (_Utils_eq(
+							c,
+							_Utils_chr('@')) || (_Utils_eq(
+							c,
+							_Utils_chr('_')) || _Utils_eq(
+							c,
+							_Utils_chr('-')))))));
+					})))
+		]));
 var $author$project$ImportParser$importLineParser = A2(
 	$elm$parser$Parser$keeper,
 	A2(
@@ -3824,28 +3803,49 @@ var $author$project$ImportParser$importsParser = function () {
 				return f(
 					A2($elm$core$List$cons, entry, acc));
 			});
-		return A2(
-			$elm$parser$Parser$keeper,
-			A2(
-				$elm$parser$Parser$keeper,
-				$elm$parser$Parser$succeed(finish),
-				A2($elm$parser$Parser$ignorer, $author$project$ImportParser$importLineParser, $author$project$ImportParser$spacesOnly)),
-			$elm$parser$Parser$oneOf(
-				_List_fromArray(
-					[
-						A2(
-						$elm$parser$Parser$ignorer,
-						$elm$parser$Parser$succeed($elm$parser$Parser$Loop),
-						$elm$parser$Parser$symbol('\n')),
-						A2(
-						$elm$parser$Parser$ignorer,
-						$elm$parser$Parser$succeed(
-							function (parsed) {
-								return $elm$parser$Parser$Done(
-									$elm$core$List$reverse(parsed));
-							}),
-						$elm$parser$Parser$end)
-					])));
+		return $elm$parser$Parser$oneOf(
+			_List_fromArray(
+				[
+					A2(
+					$elm$parser$Parser$keeper,
+					A2(
+						$elm$parser$Parser$keeper,
+						$elm$parser$Parser$succeed(finish),
+						A2($elm$parser$Parser$ignorer, $author$project$ImportParser$importLineParser, $author$project$ImportParser$spacesOnly)),
+					$elm$parser$Parser$oneOf(
+						_List_fromArray(
+							[
+								A2(
+								$elm$parser$Parser$ignorer,
+								$elm$parser$Parser$succeed($elm$parser$Parser$Loop),
+								$elm$parser$Parser$symbol('\n')),
+								A2(
+								$elm$parser$Parser$ignorer,
+								$elm$parser$Parser$succeed(
+									A2($elm$core$Basics$composeL, $elm$parser$Parser$Done, $elm$core$List$reverse)),
+								$elm$parser$Parser$symbol('\n\n'))
+							]))),
+					A2(
+					$elm$parser$Parser$ignorer,
+					$elm$parser$Parser$succeed(
+						$elm$parser$Parser$Done(acc)),
+					$elm$parser$Parser$oneOf(
+						_List_fromArray(
+							[
+								A2(
+								$elm$parser$Parser$ignorer,
+								$elm$parser$Parser$succeed($elm$core$Basics$identity),
+								$elm$parser$Parser$symbol('\n')),
+								A2(
+								$elm$parser$Parser$ignorer,
+								$elm$parser$Parser$succeed($elm$core$Basics$identity),
+								$elm$parser$Parser$symbol('\n\n')),
+								A2(
+								$elm$parser$Parser$ignorer,
+								$elm$parser$Parser$succeed($elm$core$Basics$identity),
+								$elm$parser$Parser$end)
+							])))
+				]));
 	};
 	return A2($elm$parser$Parser$loop, _List_Nil, step);
 }();
@@ -3860,6 +3860,102 @@ var $elm$core$Result$map = F2(
 			return $elm$core$Result$Err(e);
 		}
 	});
+var $elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return $elm$core$Result$Err(
+				f(e));
+		}
+	});
+var $author$project$Sorter$AsterixImportType = {$: 'AsterixImportType'};
+var $author$project$Sorter$DefaultImportType = {$: 'DefaultImportType'};
+var $author$project$Sorter$ObjectImportType = {$: 'ObjectImportType'};
+var $author$project$Sorter$defaultSortOrder = _List_fromArray(
+	[$author$project$Sorter$DefaultImportType, $author$project$Sorter$AsterixImportType, $author$project$Sorter$ObjectImportType]);
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $elm$core$String$trim = _String_trim;
+var $author$project$Sorter$parseOrderFromString = function (str) {
+	return function (xs) {
+		return $elm$core$List$isEmpty(xs) ? $elm$core$Result$Ok($author$project$Sorter$defaultSortOrder) : ((($elm$core$List$length(xs) !== 3) || (!(A2($elm$core$List$member, $author$project$Sorter$DefaultImportType, xs) && (A2($elm$core$List$member, $author$project$Sorter$AsterixImportType, xs) && A2($elm$core$List$member, $author$project$Sorter$ObjectImportType, xs))))) ? $elm$core$Result$Err('Sort string not valid. If you specify a sort order, you need to mention all of types. e.g. \"objects,asterix,defaults\"') : $elm$core$Result$Ok(xs));
+	}(
+		A2(
+			$elm$core$List$filterMap,
+			function (s) {
+				switch (s) {
+					case 'defaults':
+						return $elm$core$Maybe$Just($author$project$Sorter$DefaultImportType);
+					case 'objects':
+						return $elm$core$Maybe$Just($author$project$Sorter$ObjectImportType);
+					case 'asterix':
+						return $elm$core$Maybe$Just($author$project$Sorter$AsterixImportType);
+					default:
+						return $elm$core$Maybe$Nothing;
+				}
+			},
+			A2(
+				$elm$core$List$map,
+				$elm$core$String$trim,
+				A2($elm$core$String$split, ',', str))));
+};
 var $elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
 		return {col: col, problem: problem, row: row};
@@ -3930,6 +4026,11 @@ var $elm$core$List$append = F2(
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
 };
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -3963,23 +4064,16 @@ var $author$project$Sorter$isObjectImport = function (impt) {
 	}
 };
 var $elm$core$List$sortBy = _List_sortBy;
+var $elm$core$String$toLower = _String_toLower;
 var $author$project$Sorter$sortAsterix = $elm$core$List$sortBy(
 	function (x) {
 		if (x.$ === 'AsterixImport') {
 			var file = x.a;
-			return file;
+			return $elm$core$String$toLower(file);
 		} else {
 			return '';
 		}
 	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$List$sort = function (xs) {
-	return A2($elm$core$List$sortBy, $elm$core$Basics$identity, xs);
-};
 var $author$project$Sorter$sortDefaults = function (xs) {
 	var sortedInternals = A2(
 		$elm$core$List$map,
@@ -3993,7 +4087,11 @@ var $author$project$Sorter$sortDefaults = function (xs) {
 					$author$project$ImportParser$DefaultImport,
 					_Utils_Tuple2(
 						file,
-						$elm$core$List$sort(
+						A2(
+							$elm$core$List$sortBy,
+							function (y) {
+								return $elm$core$String$toLower(y);
+							},
 							A2(
 								$elm$core$List$filter,
 								A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$String$isEmpty),
@@ -4010,7 +4108,7 @@ var $author$project$Sorter$sortDefaults = function (xs) {
 			if (x.$ === 'DefaultImport') {
 				var _v1 = x.a;
 				var file = _v1.a;
-				return file;
+				return $elm$core$String$toLower(file);
 			} else {
 				return '';
 			}
@@ -4026,7 +4124,6 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$String$toLower = _String_toLower;
 var $author$project$Sorter$sortObjects = function (xs) {
 	var sortedInternals = A2(
 		$elm$core$List$map,
@@ -4036,7 +4133,11 @@ var $author$project$Sorter$sortObjects = function (xs) {
 				var sourceFileName = x.b;
 				return A2(
 					$author$project$ImportParser$ObjectImport,
-					$elm$core$List$sort(
+					A2(
+						$elm$core$List$sortBy,
+						function (y) {
+							return $elm$core$String$toLower(y);
+						},
 						A2(
 							$elm$core$List$filter,
 							A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$String$isEmpty),
@@ -4065,25 +4166,29 @@ var $author$project$Sorter$sortObjects = function (xs) {
 		},
 		sortedInternals);
 };
-var $author$project$Sorter$sortList = function (xs) {
-	var objectImports = A2($elm$core$List$filter, $author$project$Sorter$isObjectImport, xs);
-	var defaultImports = A2($elm$core$List$filter, $author$project$Sorter$isDefaultImport, xs);
-	var asterixImports = A2($elm$core$List$filter, $author$project$Sorter$isAsterixImport, xs);
-	return $elm$core$List$concat(
-		_List_fromArray(
-			[
-				$author$project$Sorter$sortDefaults(defaultImports),
-				$author$project$Sorter$sortAsterix(asterixImports),
-				$author$project$Sorter$sortObjects(objectImports)
-			]));
-};
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
+var $author$project$Sorter$sortList = F2(
+	function (order, xs) {
+		var objectImports = $author$project$Sorter$sortObjects(
+			A2($elm$core$List$filter, $author$project$Sorter$isObjectImport, xs));
+		var defaultImports = $author$project$Sorter$sortDefaults(
+			A2($elm$core$List$filter, $author$project$Sorter$isDefaultImport, xs));
+		var asterixImports = $author$project$Sorter$sortAsterix(
+			A2($elm$core$List$filter, $author$project$Sorter$isAsterixImport, xs));
+		return A2(
+			$elm$core$List$concatMap,
+			function (type_) {
+				switch (type_.$) {
+					case 'DefaultImportType':
+						return defaultImports;
+					case 'ObjectImportType':
+						return objectImports;
+					default:
+						return asterixImports;
+				}
+			},
+			order);
+	});
+var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$ImportParser$toString = function (line) {
 	var toSourceString = function (s) {
 		return '\"' + (s + '\";');
@@ -4106,53 +4211,51 @@ var $author$project$ImportParser$toString = function (line) {
 			return 'import ' + (f + (objImports + (' from ' + toSourceString(s))));
 	}
 };
-var $author$project$Sorter$sortImportsString = function (str) {
-	return A2(
-		$elm$core$Result$map,
-		A2(
-			$elm$core$Basics$composeR,
-			$author$project$Sorter$sortList,
-			A2(
-				$elm$core$Basics$composeR,
-				$elm$core$List$map($author$project$ImportParser$toString),
-				$elm$core$String$join('\n'))),
-		A2($elm$parser$Parser$run, $author$project$ImportParser$importsParser, str));
-};
+var $author$project$Sorter$sortImportsString = F2(
+	function (ordStr, str) {
+		var ord = $author$project$Sorter$parseOrderFromString(ordStr);
+		return A2(
+			$elm$core$Result$andThen,
+			function (order) {
+				return A2(
+					$elm$core$Result$map,
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Sorter$sortList(order),
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$List$map($author$project$ImportParser$toString),
+							$elm$core$String$join('\n'))),
+					A2(
+						$elm$core$Result$mapError,
+						$elm$core$Debug$toString,
+						A2($elm$parser$Parser$run, $author$project$ImportParser$importsParser, str)));
+			},
+			ord);
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'NoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'ReceiveImportsString':
-				var str = msg.a;
-				var _v1 = A2($elm$core$Debug$log, 'received', str);
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$core$Task$perform,
-						$author$project$Main$SortImports,
-						$elm$core$Task$succeed(str)));
-			case 'SaveSortedString':
-				var str = msg.a;
-				return _Utils_Tuple2(
-					model,
-					$author$project$Main$saveSortedString(str));
-			default:
-				var str = msg.a;
-				var res = $author$project$Sorter$sortImportsString(str);
-				if (res.$ === 'Ok') {
-					var r = res.a;
+			case 'ReceiveInputs':
+				var _v1 = msg.a;
+				var data = _v1.a;
+				var sortString = _v1.b;
+				var sortedImports = A2($author$project$Sorter$sortImportsString, sortString, data);
+				if (sortedImports.$ === 'Ok') {
+					var d = sortedImports.a;
 					return _Utils_Tuple2(
 						model,
-						A2(
-							$elm$core$Task$perform,
-							$author$project$Main$SaveSortedString,
-							$elm$core$Task$succeed(r)));
+						$author$project$Main$logSortedImports(d));
 				} else {
-					var e = res.a;
-					var _v3 = A2($elm$core$Debug$log, 'err', e);
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					var e = sortedImports.a;
+					return _Utils_Tuple2(
+						model,
+						$author$project$Main$logSortedImports(e));
 				}
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$core$Platform$worker = _Platform_worker;
