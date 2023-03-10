@@ -16,9 +16,9 @@ main =
 
 type Msg
     = NoOp
-    | ReceiveImportsString String
+    | ReceiveInputs ( String, String )
     | SortImports String
-    | SaveSortedString String
+    | SendSortedImports String
 
 
 type alias Model =
@@ -27,7 +27,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( 1, readImportsString "input.txt" )
+    ( 1, readImportsString "inputs.txt" )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -36,44 +36,36 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ReceiveImportsString str ->
+        ReceiveInputs ( data, sortString ) ->
             let
-                _ =
-                    Debug.log "received" str
+                sortedImports =
+                    sortImportsString sortString data
             in
-            ( model, Task.perform SortImports (Task.succeed str) )
-
-        SaveSortedString str ->
-            ( model, saveSortedString str )
-
-        SortImports str ->
-            let
-                res =
-                    sortImportsString str
-            in
-            case res of
-                Ok r ->
-                    ( model, Task.perform SaveSortedString (Task.succeed r) )
+            case sortedImports of
+                Ok d ->
+                    ( model, logSortedImports d )
 
                 Err e ->
-                    let
-                        _ =
-                            Debug.log "err" e
-                    in
-                    ( model, Cmd.none )
+                    ( model, logSortedImports e )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ receiveImportsString ReceiveImportsString
+        [ receiveInputs ReceiveInputs
         ]
 
 
-port receiveImportsString : (String -> msg) -> Sub msg
+port receiveInputs : (( String, String ) -> msg) -> Sub msg
 
 
 port readImportsString : String -> Cmd msg
 
 
 port saveSortedString : String -> Cmd msg
+
+
+port logSortedImports : String -> Cmd msg

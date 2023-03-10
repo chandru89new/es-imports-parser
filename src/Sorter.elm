@@ -4,19 +4,31 @@ import ImportParser exposing (ImportLine(..), importsParser, toString)
 import Parser
 
 
-sortList : List ImportLine -> List ImportLine
-sortList xs =
+sortList : List ImportType -> List ImportLine -> List ImportLine
+sortList order xs =
     let
         defaultImports =
-            List.filter isDefaultImport xs
+            List.filter isDefaultImport xs |> sortDefaults
 
         objectImports =
-            List.filter isObjectImport xs
+            List.filter isObjectImport xs |> sortObjects
 
         asterixImports =
-            List.filter isAsterixImport xs
+            List.filter isAsterixImport xs |> sortAsterix
     in
-    List.concat [ sortDefaults defaultImports, sortAsterix asterixImports, sortObjects objectImports ]
+    List.concatMap
+        (\type_ ->
+            case type_ of
+                DefaultImportType ->
+                    defaultImports
+
+                ObjectImportType ->
+                    objectImports
+
+                AsterixImportType ->
+                    asterixImports
+        )
+        order
 
 
 isDefaultImport : ImportLine -> Bool
@@ -58,7 +70,7 @@ sortDefaults xs =
                     case x of
                         DefaultImport ( file, ys ) sf ->
                             -- ys could have empty strings in the list so we need to remove those
-                            DefaultImport ( file, List.sort (List.filter (not << String.isEmpty) ys) ) sf
+                            DefaultImport ( file, List.sortBy (\y -> String.toLower y) (List.filter (not << String.isEmpty) ys) ) sf
 
                         _ ->
                             x
@@ -69,7 +81,7 @@ sortDefaults xs =
         (\x ->
             case x of
                 DefaultImport ( file, _ ) _ ->
-                    file
+                    String.toLower file
 
                 _ ->
                     ""
@@ -83,7 +95,7 @@ sortAsterix =
         (\x ->
             case x of
                 AsterixImport file _ ->
-                    file
+                    String.toLower file
 
                 _ ->
                     ""
@@ -99,7 +111,7 @@ sortObjects xs =
                     case x of
                         ObjectImport list sourceFileName ->
                             -- list could have empty strings so need to filter them out before sorting
-                            ObjectImport (List.sort (List.filter (not << String.isEmpty) list)) sourceFileName
+                            ObjectImport (List.sortBy (\y -> String.toLower y) (List.filter (not << String.isEmpty) list)) sourceFileName
 
                         _ ->
                             x
@@ -123,8 +135,67 @@ sortObjects xs =
         sortedInternals
 
 
-sortImportsString : String -> Result (List Parser.DeadEnd) String
-sortImportsString str =
+
+-- sortImportsString : String -> String -> Result (List Parser.DeadEnd) String
+
+
+sortImportsString ordStr str =
+    let
+        ord =
+            parseOrderFromString ordStr
+    in
+    ord
+        |> Result.andThen
+            (\order ->
+                str
+                    |> Parser.run importsParser
+                    |> Result.mapError Debug.toString
+                    |> Result.map (sortList order >> List.map toString >> String.join "\n")
+            )
+
+
+type ImportType
+    = DefaultImportType
+    | ObjectImportType
+    | AsterixImportType
+
+
+defaultSortOrder : List ImportType
+defaultSortOrder =
+    [ DefaultImportType, AsterixImportType, ObjectImportType ]
+
+
+parseOrderFromString : String -> Result String (List ImportType)
+parseOrderFromString str =
     str
-        |> Parser.run importsParser
-        |> Result.map (sortList >> List.map toString >> String.join "\n")
+        |> String.split ","
+        |> List.map String.trim
+        |> List.filterMap
+            (\s ->
+                case s of
+                    "defaults" ->
+                        Just DefaultImportType
+
+                    "objects" ->
+                        Just ObjectImportType
+
+                    "asterix" ->
+                        Just AsterixImportType
+
+                    _ ->
+                        Nothing
+            )
+        |> (\xs ->
+                if List.isEmpty xs then
+                    Ok defaultSortOrder
+
+                else if
+                    List.length xs
+                        /= 3
+                        || not (List.member DefaultImportType xs && List.member AsterixImportType xs && List.member ObjectImportType xs)
+                then
+                    Err "Sort string not valid. If you specify a sort order, you need to mention all of types. e.g. \"objects,asterix,defaults\""
+
+                else
+                    Ok xs
+           )
