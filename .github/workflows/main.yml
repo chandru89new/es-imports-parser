@@ -15,7 +15,9 @@ jobs:
       - name: Setup env
         run: corepack enable 
       - name: Install deps
-        run: yarn build
+        run: |
+          yarn install
+          yarn build
       - name: Run tests
         run: yarn test
           
