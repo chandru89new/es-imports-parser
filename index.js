@@ -17,7 +17,7 @@ const main = () => {
   const fileName = options?.file;
   const sortOrder = options?.sort || "";
 
-  if (!fileName) throw new Error("Need a file. Use -f <filepath>");
+  if (!fileName) throw new Error("Need a file. Use --file <filepath>");
 
   const data = fs.readFileSync(fileName, "utf-8");
 
