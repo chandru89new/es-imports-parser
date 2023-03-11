@@ -34,59 +34,6 @@ Available options:
 
 **Note**: If you want to specify a custom order (using the `--sort` option), you have to mention all four options in the order you want.
 
-## Caveats
-
-**No spaces between imports.**
-
-Wrong:
-```
-import A from "A";
-
-import B from "B";
-```
-
-Right:
-```
-import A from "A";
-import B from "B";
-```
-
-**One or more lines of separation between imports and rest of the content.**
-
-Wrong:
-```
-import A from "A";
-const b = A.b()
-```
-
-Right:
-```
-import A from "A";
-
-const b = A.b()
-```
-
-**All imports must be grouped to the top of the file.**
-
-Wrong:
-```
-import Something from "A";
-
-Something()
-console.log("A")
-
-import Another from "B":
-```
-
-Right:
-```
-import Something from "A";
-import Another from "B":
-
-Something()
-console.log("A")
-```
-
 **These are the only valid import strings this tool can parse:**
 
 ```

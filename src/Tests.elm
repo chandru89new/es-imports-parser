@@ -33,8 +33,7 @@ import {
   WorkspaceModVariable,
   WorkspaceUpdatePayload,
 } from "../types/workspace";
-import "../styles.css";
-"""
+import "../styles.css";"""
 
 
 orderedImports : String
@@ -55,8 +54,7 @@ import { Workspace, WorkspaceConnectionAssociation, WorkspaceMod, WorkspaceModIn
 
 incorrectImports =
     """import * Test from "wherever";
-import Test from "someplace";
-"""
+import Test from "someplace";"""
 
 
 tests : Test
@@ -101,7 +99,8 @@ import { useEffect, useState } from "react";
 import { useWorkflow } from "../../Workflow/common";
 import { validationErrorIcon } from "../../../constants/icons";
 import { Form, Formik, useFormikContext } from "formik";
-"""
+
+import Something from "somewhere";"""
 
                     output =
                         """import ActionGroup from "../../ActionGroup";
@@ -111,6 +110,7 @@ import ErrorMessage from "../../ErrorMessage";
 import get from "lodash/get";
 import Icon from "../../Icon";
 import NeutralButton from "../../forms/NeutralButton";
+import Something from "somewhere";
 import SubmitButton from "../../forms/SubmitButton";
 import SuccessMessage from "../../SuccessMessage";
 import useAnalytics from "../../../hooks/useAnalytics";
@@ -181,19 +181,70 @@ import useIdentityConnectionTest from "../../../hooks/useIdentityConnectionTest"
                 input
                     |> Sorter.sortImportsString "asterix,objects,none,defaults"
                     |> Expect.equal (Ok output)
-        , test "more" <|
+        , test "test with spaces between imports" <|
             \_ ->
                 let
                     input =
                         """import axios from "axios";
 import routeConfig from "./config/routes";
+
 import { AnalyticsProvider } from "./hooks/useAnalytics";
+
 import { API_FETCHER, unauthenticatedErrorResponseInterceptor } from "./api";
 import { AuthorizationProvider } from "./hooks/useAuthorization";
 import { BreakpointProvider } from "./hooks/useBreakpoint";
+
 import ErrorBoundaryModal from "./components/ErrorBoundaryModal";
 import { AuthenticationProvider } from "./hooks/useAuthentication";
 import { FullHeightThemeWrapper, ThemeProvider } from "./hooks/useTheme";
+
+import { Helmet } from "react-helmet";
+import { SWRConfig } from "swr";
+import "something";
+import { BrowserRouter, useNavigate, useRoutes } from "react-router-dom";
+import { useEffect } from "react";
+import { Toast } from "./components/Toast";
+"""
+
+                    output =
+                        """import "something";
+import axios from "axios";
+import ErrorBoundaryModal from "./components/ErrorBoundaryModal";
+import routeConfig from "./config/routes";
+import { AnalyticsProvider } from "./hooks/useAnalytics";
+import { API_FETCHER, unauthenticatedErrorResponseInterceptor } from "./api";
+import { AuthenticationProvider } from "./hooks/useAuthentication";
+import { AuthorizationProvider } from "./hooks/useAuthorization";
+import { BreakpointProvider } from "./hooks/useBreakpoint";
+import { BrowserRouter, useNavigate, useRoutes } from "react-router-dom";
+import { FullHeightThemeWrapper, ThemeProvider } from "./hooks/useTheme";
+import { Helmet } from "react-helmet";
+import { SWRConfig } from "swr";
+import { Toast } from "./components/Toast";
+import { useEffect } from "react";"""
+                in
+                input
+                    |> Sorter.sortImportsString ""
+                    |> Expect.equal (Ok output)
+        , test "test with spaces between imports and content between imports" <|
+            \_ ->
+                let
+                    input =
+                        """import axios from "axios";
+import routeConfig from "./config/routes";
+
+import { AnalyticsProvider } from "./hooks/useAnalytics";
+
+import { API_FETCHER, unauthenticatedErrorResponseInterceptor } from "./api";
+import { AuthorizationProvider } from "./hooks/useAuthorization";
+import { BreakpointProvider } from "./hooks/useBreakpoint";
+
+import ErrorBoundaryModal from "./components/ErrorBoundaryModal";
+import { AuthenticationProvider } from "./hooks/useAuthentication";
+import { FullHeightThemeWrapper, ThemeProvider } from "./hooks/useTheme";
+
+console.log('haha')
+
 import { Helmet } from "react-helmet";
 import { SWRConfig } from "swr";
 import "something";
@@ -293,4 +344,113 @@ parserOrderFromStringTest =
                 ""
                     |> Sorter.parseOrderFromString
                     |> Expect.equal (Ok Sorter.defaultSortOrder)
+        ]
+
+
+testsFromReadmeExamples : Test
+testsFromReadmeExamples =
+    describe "Tests from readme examples"
+        [ test "space between imports. no new line at the end" <|
+            \_ ->
+                let
+                    input =
+                        """
+import A from "A";
+
+import B from "B";"""
+
+                    output =
+                        """import A from "A";
+import B from "B";"""
+                in
+                input
+                    |> Sorter.sortImportsString ""
+                    |> Expect.equal (Ok output)
+        , test "statement immediately after imports, no new line at the end" <|
+            \_ ->
+                let
+                    input =
+                        """
+import A from "A";
+console.log(A);"""
+
+                    output =
+                        """import A from "A";"""
+                in
+                input
+                    |> Sorter.sortImportsString ""
+                    |> Expect.equal (Ok output)
+        , test "statements between imports, with spaces between, no newline at end" <|
+            \_ ->
+                let
+                    input =
+                        """
+import Something from "A";
+
+Something()
+console.log("A")
+
+import Another from "B";"""
+
+                    output =
+                        """import Another from "B";
+import Something from "A";"""
+                in
+                input
+                    |> Sorter.sortImportsString ""
+                    |> Expect.equal (Ok output)
+        , test "space between imports. new line at the end" <|
+            \_ ->
+                let
+                    input =
+                        """
+import A from "A";
+
+import B from "B";
+"""
+
+                    output =
+                        """import A from "A";
+import B from "B";"""
+                in
+                input
+                    |> Sorter.sortImportsString ""
+                    |> Expect.equal (Ok output)
+        , test "statement immediately after imports, new lines at the end" <|
+            \_ ->
+                let
+                    input =
+                        """
+import A from "A";
+console.log(A);
+
+"""
+
+                    output =
+                        """import A from "A";"""
+                in
+                input
+                    |> Sorter.sortImportsString ""
+                    |> Expect.equal (Ok output)
+        , test "statements between imports, with spaces between, newlines at end" <|
+            \_ ->
+                let
+                    input =
+                        """
+import Something from "A";
+
+Something()
+console.log("A")
+
+import Another from "B";
+
+"""
+
+                    output =
+                        """import Another from "B";
+import Something from "A";"""
+                in
+                input
+                    |> Sorter.sortImportsString ""
+                    |> Expect.equal (Ok output)
         ]

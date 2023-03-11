@@ -114,27 +114,30 @@ importsParser =
         step acc =
             let
                 finish entry f =
-                    f (entry :: acc)
+                    case entry of
+                        Just val ->
+                            f (val :: acc)
+
+                        Nothing ->
+                            f acc
             in
             oneOf
                 [ succeed finish
-                    |= importLineParser
+                    |= map Just importLineParser
                     |. spacesOnly
                     |= oneOf
                         [ succeed Loop
                             |. symbol "\n"
                         , succeed (Done << List.reverse)
-                            |. symbol "\n\n"
-                        ]
-                , succeed (Done acc)
-                    |. oneOf
-                        [ succeed identity
-                            |. symbol "\n"
-                        , succeed identity
-                            |. symbol "\n\n"
-                        , succeed identity
                             |. end
                         ]
+                , succeed (Done <| List.reverse acc)
+                    |. end
+                , succeed (\_ -> finish Nothing Loop)
+                    |= symbol "\n"
+                , succeed (\_ -> finish Nothing Loop)
+                    |= chompIf (\c -> not <| c == '\n')
+                    |. spaces
                 ]
     in
     loop [] step
