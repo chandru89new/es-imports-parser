@@ -1,8 +1,7 @@
 port module Main exposing (..)
 
-import ImportParser exposing (importsParser, toString)
-import Parser exposing (run)
-import Sorter exposing (sortImportsString, sortList)
+import OptionsDecoder
+import Sorter exposing (sortImportsString)
 import Task
 
 
@@ -16,18 +15,22 @@ main =
 
 type Msg
     = NoOp
-    | ReceiveInputs ( String, String )
-    | SortImports String
-    | SendSortedImports String
+    | NodeToElm ( String, String )
+    | ReceiveCLIString String
+    | SortImports
 
 
 type alias Model =
-    Int
+    { rawInput : String
+    , filePath : String
+    , fileContents : String
+    , sortOrder : String
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( 1, readImportsString "inputs.txt" )
+    ( Model "" "" "" "", Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -36,36 +39,62 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ReceiveInputs ( data, sortString ) ->
+        NodeToElm ( type_, data ) ->
+            case type_ of
+                "cli_input" ->
+                    ( { model | rawInput = data }, Task.perform ReceiveCLIString (Task.succeed data) )
+
+                "file_contents" ->
+                    ( { model | fileContents = data }, Task.perform (\_ -> SortImports) (Task.succeed ()) )
+
+                _ ->
+                    ( model, elmToNode ( "log", "I dont know what to do with this type of message coming from Node: type = " ++ type_ ) )
+
+        ReceiveCLIString str ->
+            let
+                options =
+                    OptionsDecoder.parseString str
+
+                file =
+                    OptionsDecoder.getValue "file" options |> Maybe.map String.trim
+
+                sortOrder =
+                    OptionsDecoder.getValue "sort" options |> Maybe.withDefault ""
+            in
+            case file of
+                Nothing ->
+                    ( model, elmToNode ( "log", "I need a file name mentioned with the --file flag to work." ) )
+
+                Just "" ->
+                    ( model, elmToNode ( "log", "--file cannot be empty string. I need a valid file name to work with this." ) )
+
+                Just f ->
+                    ( { model | filePath = f, sortOrder = sortOrder }, elmToNode ( "get_file_contents", f ) )
+
+        SortImports ->
             let
                 sortedImports =
-                    sortImportsString sortString data
+                    sortImportsString model.sortOrder model.fileContents
             in
             case sortedImports of
-                Ok d ->
-                    ( model, logSortedImports d )
+                Ok str ->
+                    ( model, elmToNode ( "log", str ) )
 
                 Err e ->
-                    ( model, logSortedImports e )
-
-        _ ->
-            ( model, Cmd.none )
+                    ( model, elmToNode ( "log", e ) )
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
-        [ receiveInputs ReceiveInputs
+        [ nodeToElm NodeToElm
         ]
 
 
-port receiveInputs : (( String, String ) -> msg) -> Sub msg
+port logToConsole : String -> Cmd msg
 
 
-port readImportsString : String -> Cmd msg
+port elmToNode : ( String, String ) -> Cmd msg
 
 
-port saveSortedString : String -> Cmd msg
-
-
-port logSortedImports : String -> Cmd msg
+port nodeToElm : (( String, String ) -> msg) -> Sub msg

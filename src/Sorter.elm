@@ -151,10 +151,7 @@ sortObjects xs =
         sortedInternals
 
 
-
--- sortImportsString : String -> String -> Result (List Parser.DeadEnd) String
-
-
+sortImportsString : String -> String -> Result String String
 sortImportsString ordStr str =
     let
         ord =
