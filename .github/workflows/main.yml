@@ -2,9 +2,12 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
   workflow_dispatch:
-  
+
 jobs:
   test:
     name: Tests
@@ -13,11 +16,10 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v2
       - name: Setup env
-        run: corepack enable 
+        run: corepack enable
       - name: Install deps
         run: |
           yarn install
           yarn build
       - name: Run tests
         run: yarn test
-          
