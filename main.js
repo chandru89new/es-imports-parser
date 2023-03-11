@@ -3124,6 +3124,9 @@ var $author$project$ImportParser$ObjectImport = F2(
 	function (a, b) {
 		return {$: 'ObjectImport', a: a, b: b};
 	});
+var $author$project$ImportParser$SourceImport = function (a) {
+	return {$: 'SourceImport', a: a};
+};
 var $elm$parser$Parser$Advanced$isSubChar = _Parser_isSubChar;
 var $elm$core$Basics$negate = function (n) {
 	return -n;
@@ -3688,40 +3691,50 @@ var $author$project$ImportParser$sourceFileParser = $elm$parser$Parser$oneOf(
 var $author$project$ImportParser$importLineParser = A2(
 	$elm$parser$Parser$keeper,
 	A2(
-		$elm$parser$Parser$keeper,
+		$elm$parser$Parser$ignorer,
 		A2(
 			$elm$parser$Parser$ignorer,
 			A2(
 				$elm$parser$Parser$ignorer,
-				A2(
-					$elm$parser$Parser$ignorer,
-					$elm$parser$Parser$succeed(
-						F2(
-							function (f, b) {
-								return f(b);
-							})),
-					$elm$parser$Parser$keyword('import')),
-				$elm$parser$Parser$symbol(' ')),
-			$elm$parser$Parser$spaces),
-		A2(
-			$elm$parser$Parser$ignorer,
-			A2(
-				$elm$parser$Parser$ignorer,
-				A2(
-					$elm$parser$Parser$ignorer,
-					$elm$parser$Parser$oneOf(
-						_List_fromArray(
-							[
-								A2($elm$parser$Parser$map, $author$project$ImportParser$ObjectImport, $author$project$ImportParser$objectImportStringParser),
-								A2($elm$parser$Parser$map, $author$project$ImportParser$AsterixImport, $author$project$ImportParser$asterixImportStringParser),
-								A2($elm$parser$Parser$map, $author$project$ImportParser$DefaultImport, $author$project$ImportParser$defaultImportStringParser)
-							])),
-					$elm$parser$Parser$spaces),
-				$elm$parser$Parser$keyword('from')),
-			$elm$parser$Parser$symbol(' '))),
+				$elm$parser$Parser$succeed($elm$core$Basics$identity),
+				$elm$parser$Parser$keyword('import')),
+			$elm$parser$Parser$symbol(' ')),
+		$elm$parser$Parser$spaces),
 	A2(
 		$elm$parser$Parser$ignorer,
-		$author$project$ImportParser$sourceFileParser,
+		$elm$parser$Parser$oneOf(
+			_List_fromArray(
+				[
+					A2(
+					$elm$parser$Parser$keeper,
+					$elm$parser$Parser$succeed(
+						function (str) {
+							return $author$project$ImportParser$SourceImport(str);
+						}),
+					$author$project$ImportParser$sourceFileParser),
+					A2(
+					$elm$parser$Parser$keeper,
+					A2(
+						$elm$parser$Parser$keeper,
+						$elm$parser$Parser$succeed($elm$core$Basics$identity),
+						A2(
+							$elm$parser$Parser$ignorer,
+							A2(
+								$elm$parser$Parser$ignorer,
+								A2(
+									$elm$parser$Parser$ignorer,
+									$elm$parser$Parser$oneOf(
+										_List_fromArray(
+											[
+												A2($elm$parser$Parser$map, $author$project$ImportParser$ObjectImport, $author$project$ImportParser$objectImportStringParser),
+												A2($elm$parser$Parser$map, $author$project$ImportParser$AsterixImport, $author$project$ImportParser$asterixImportStringParser),
+												A2($elm$parser$Parser$map, $author$project$ImportParser$DefaultImport, $author$project$ImportParser$defaultImportStringParser)
+											])),
+									$elm$parser$Parser$spaces),
+								$elm$parser$Parser$keyword('from')),
+							$elm$parser$Parser$symbol(' '))),
+					$author$project$ImportParser$sourceFileParser)
+				])),
 		$elm$parser$Parser$symbol(';')));
 var $elm$parser$Parser$Advanced$loopHelp = F4(
 	function (p, state, callback, s0) {
@@ -3874,8 +3887,9 @@ var $elm$core$Result$mapError = F2(
 var $author$project$Sorter$AsterixImportType = {$: 'AsterixImportType'};
 var $author$project$Sorter$DefaultImportType = {$: 'DefaultImportType'};
 var $author$project$Sorter$ObjectImportType = {$: 'ObjectImportType'};
+var $author$project$Sorter$SourceImportType = {$: 'SourceImportType'};
 var $author$project$Sorter$defaultSortOrder = _List_fromArray(
-	[$author$project$Sorter$DefaultImportType, $author$project$Sorter$AsterixImportType, $author$project$Sorter$ObjectImportType]);
+	[$author$project$Sorter$SourceImportType, $author$project$Sorter$DefaultImportType, $author$project$Sorter$AsterixImportType, $author$project$Sorter$ObjectImportType]);
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
 		var _v0 = f(mx);
@@ -3935,7 +3949,9 @@ var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$String$trim = _String_trim;
 var $author$project$Sorter$parseOrderFromString = function (str) {
 	return function (xs) {
-		return $elm$core$List$isEmpty(xs) ? $elm$core$Result$Ok($author$project$Sorter$defaultSortOrder) : ((($elm$core$List$length(xs) !== 3) || (!(A2($elm$core$List$member, $author$project$Sorter$DefaultImportType, xs) && (A2($elm$core$List$member, $author$project$Sorter$AsterixImportType, xs) && A2($elm$core$List$member, $author$project$Sorter$ObjectImportType, xs))))) ? $elm$core$Result$Err('Sort string not valid. If you specify a sort order, you need to mention all of types. e.g. \"objects,asterix,defaults\"') : $elm$core$Result$Ok(xs));
+		return $elm$core$List$isEmpty(xs) ? $elm$core$Result$Ok($author$project$Sorter$defaultSortOrder) : (((!_Utils_eq(
+			$elm$core$List$length(xs),
+			$elm$core$List$length($author$project$Sorter$defaultSortOrder))) || (!(A2($elm$core$List$member, $author$project$Sorter$DefaultImportType, xs) && (A2($elm$core$List$member, $author$project$Sorter$AsterixImportType, xs) && (A2($elm$core$List$member, $author$project$Sorter$ObjectImportType, xs) && A2($elm$core$List$member, $author$project$Sorter$SourceImportType, xs)))))) ? $elm$core$Result$Err('Sort string not valid. If you specify a sort order, you need to mention all of the types (and exactly once). e.g. \"objects,asterix,defaults,none\"') : $elm$core$Result$Ok(xs));
 	}(
 		A2(
 			$elm$core$List$filterMap,
@@ -3947,6 +3963,8 @@ var $author$project$Sorter$parseOrderFromString = function (str) {
 						return $elm$core$Maybe$Just($author$project$Sorter$ObjectImportType);
 					case 'asterix':
 						return $elm$core$Maybe$Just($author$project$Sorter$AsterixImportType);
+					case 'none':
+						return $elm$core$Maybe$Just($author$project$Sorter$SourceImportType);
 					default:
 						return $elm$core$Maybe$Nothing;
 				}
@@ -4063,6 +4081,13 @@ var $author$project$Sorter$isObjectImport = function (impt) {
 		return false;
 	}
 };
+var $author$project$Sorter$isSourceImports = function (impt) {
+	if (impt.$ === 'SourceImport') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $elm$core$List$sortBy = _List_sortBy;
 var $elm$core$String$toLower = _String_toLower;
 var $author$project$Sorter$sortAsterix = $elm$core$List$sortBy(
@@ -4166,8 +4191,23 @@ var $author$project$Sorter$sortObjects = function (xs) {
 		},
 		sortedInternals);
 };
+var $author$project$Sorter$sortSourceImports = function (xs) {
+	return A2(
+		$elm$core$List$sortBy,
+		function (x) {
+			if (x.$ === 'SourceImport') {
+				var s = x.a;
+				return $elm$core$String$toLower(s);
+			} else {
+				return '';
+			}
+		},
+		xs);
+};
 var $author$project$Sorter$sortList = F2(
 	function (order, xs) {
+		var sourceImports = $author$project$Sorter$sortSourceImports(
+			A2($elm$core$List$filter, $author$project$Sorter$isSourceImports, xs));
 		var objectImports = $author$project$Sorter$sortObjects(
 			A2($elm$core$List$filter, $author$project$Sorter$isObjectImport, xs));
 		var defaultImports = $author$project$Sorter$sortDefaults(
@@ -4182,8 +4222,10 @@ var $author$project$Sorter$sortList = F2(
 						return defaultImports;
 					case 'ObjectImportType':
 						return objectImports;
-					default:
+					case 'AsterixImportType':
 						return asterixImports;
+					default:
+						return sourceImports;
 				}
 			},
 			order);
@@ -4194,6 +4236,9 @@ var $author$project$ImportParser$toString = function (line) {
 		return '\"' + (s + '\";');
 	};
 	switch (line.$) {
+		case 'SourceImport':
+			var s = line.a;
+			return 'import ' + toSourceString(s);
 		case 'AsterixImport':
 			var f = line.a;
 			var s = line.b;

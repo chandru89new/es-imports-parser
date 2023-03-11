@@ -214,7 +214,7 @@ parseOrderFromString str =
                         /= List.length defaultSortOrder
                         || not (List.member DefaultImportType xs && List.member AsterixImportType xs && List.member ObjectImportType xs && List.member SourceImportType xs)
                 then
-                    Err "Sort string not valid. If you specify a sort order, you need to mention all of types. e.g. \"objects,asterix,defaults,none\""
+                    Err "Sort string not valid. If you specify a sort order, you need to mention all of the types (and exactly once). e.g. \"objects,asterix,defaults,none\""
 
                 else
                     Ok xs

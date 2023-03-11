@@ -9,7 +9,7 @@ const main = () => {
   });
 
   // process args
-  program.option("-f, --file <string>").option("-s, --sort <string>");
+  program.option("--file <string>").option("--sort <string>");
   program.parse();
   const options = program.opts();
 

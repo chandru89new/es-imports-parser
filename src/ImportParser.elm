@@ -8,10 +8,6 @@ type alias SourceFile =
     String
 
 
-type alias RawLine =
-    String
-
-
 type ImportLine
     = DefaultImport ( String, List String ) SourceFile
     | ObjectImport (List String) SourceFile
