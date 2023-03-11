@@ -15,11 +15,13 @@ jobs:
     steps:
       - name: Checkout branch
         uses: actions/checkout@v2
-      - name: Setup env
-        run: corepack enable
-      - name: Install deps
+      - name: Install node
+        uses: actions/setup-node@v3
+        with:
+          node_version: latest
+      - name: Install elm
         run: |
-          yarn install
-          yarn build
+          npm i -g elm elm-test
+          make build
       - name: Run tests
-        run: yarn test
+        run: make test
