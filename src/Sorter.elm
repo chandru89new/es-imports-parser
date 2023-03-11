@@ -165,7 +165,7 @@ sortImportsString ordStr str =
             (\order ->
                 str
                     |> Parser.run importsParser
-                    |> Result.mapError Debug.toString
+                    |> Result.mapError Parser.deadEndsToString
                     |> Result.map (sortList order >> List.map toString >> String.join "\n")
             )
 

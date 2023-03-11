@@ -6,7 +6,7 @@
   },
   "scripts": {
     "test": "elm-test src/Tests.elm",
-    "build": "elm make src/Main.elm --output main.js",
+    "build": "elm make src/Main.elm --optimize --output main.js",
     "sort": "node index.js"
   }
 }
