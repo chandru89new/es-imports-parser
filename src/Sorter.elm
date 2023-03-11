@@ -15,6 +15,9 @@ sortList order xs =
 
         asterixImports =
             List.filter isAsterixImport xs |> sortAsterix
+
+        sourceImports =
+            List.filter isSourceImports xs |> sortSourceImports
     in
     List.concatMap
         (\type_ ->
@@ -27,6 +30,9 @@ sortList order xs =
 
                 AsterixImportType ->
                     asterixImports
+
+                SourceImportType ->
+                    sourceImports
         )
         order
 
@@ -55,6 +61,16 @@ isAsterixImport : ImportLine -> Bool
 isAsterixImport impt =
     case impt of
         AsterixImport _ _ ->
+            True
+
+        _ ->
+            False
+
+
+isSourceImports : ImportLine -> Bool
+isSourceImports impt =
+    case impt of
+        SourceImport _ ->
             True
 
         _ ->
@@ -155,14 +171,15 @@ sortImportsString ordStr str =
 
 
 type ImportType
-    = DefaultImportType
+    = SourceImportType
+    | DefaultImportType
     | ObjectImportType
     | AsterixImportType
 
 
 defaultSortOrder : List ImportType
 defaultSortOrder =
-    [ DefaultImportType, AsterixImportType, ObjectImportType ]
+    [ SourceImportType, DefaultImportType, AsterixImportType, ObjectImportType ]
 
 
 parseOrderFromString : String -> Result String (List ImportType)
@@ -182,6 +199,9 @@ parseOrderFromString str =
                     "asterix" ->
                         Just AsterixImportType
 
+                    "none" ->
+                        Just SourceImportType
+
                     _ ->
                         Nothing
             )
@@ -191,11 +211,25 @@ parseOrderFromString str =
 
                 else if
                     List.length xs
-                        /= 3
-                        || not (List.member DefaultImportType xs && List.member AsterixImportType xs && List.member ObjectImportType xs)
+                        /= List.length defaultSortOrder
+                        || not (List.member DefaultImportType xs && List.member AsterixImportType xs && List.member ObjectImportType xs && List.member SourceImportType xs)
                 then
-                    Err "Sort string not valid. If you specify a sort order, you need to mention all of types. e.g. \"objects,asterix,defaults\""
+                    Err "Sort string not valid. If you specify a sort order, you need to mention all of types. e.g. \"objects,asterix,defaults,none\""
 
                 else
                     Ok xs
            )
+
+
+sortSourceImports : List ImportLine -> List ImportLine
+sortSourceImports xs =
+    List.sortBy
+        (\x ->
+            case x of
+                SourceImport s ->
+                    String.toLower s
+
+                _ ->
+                    ""
+        )
+        xs

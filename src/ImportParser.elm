@@ -16,6 +16,7 @@ type ImportLine
     = DefaultImport ( String, List String ) SourceFile
     | ObjectImport (List String) SourceFile
     | AsterixImport String SourceFile
+    | SourceImport String
 
 
 defaultImportStringParser : Parser ( String, List String )
@@ -93,15 +94,20 @@ asterixImportStringParser =
 
 importLineParser : Parser ImportLine
 importLineParser =
-    succeed (\f b -> f b)
+    succeed identity
         |. keyword "import"
         |. symbol " "
         |. spaces
-        |= oneOf [ map ObjectImport objectImportStringParser, map AsterixImport asterixImportStringParser, map DefaultImport defaultImportStringParser ]
-        |. spaces
-        |. keyword "from"
-        |. symbol " "
-        |= sourceFileParser
+        |= oneOf
+            [ succeed (\str -> SourceImport str)
+                |= sourceFileParser
+            , succeed identity
+                |= oneOf [ map ObjectImport objectImportStringParser, map AsterixImport asterixImportStringParser, map DefaultImport defaultImportStringParser ]
+                |. spaces
+                |. keyword "from"
+                |. symbol " "
+                |= sourceFileParser
+            ]
         |. symbol ";"
 
 
@@ -151,6 +157,9 @@ toString line =
             "\"" ++ s ++ "\";"
     in
     case line of
+        SourceImport s ->
+            "import " ++ toSourceString s
+
         AsterixImport f s ->
             "import * as " ++ f ++ " from " ++ toSourceString s
 
@@ -167,83 +176,3 @@ toString line =
                         ", { " ++ String.join ", " xs ++ " }"
             in
             "import " ++ f ++ objImports ++ " from " ++ toSourceString s
-
-
-correctImports : List String
-correctImports =
-    [ """import * as whatever from "somewhere";"""
-    , "import Test from \"somewhere\";"
-    , """import Test, {more} from "somewhere";"""
-    , "import Test , { other, one } from \"someplace\";"
-    , "import { ok } from \"lodash\";"
-    , "import {fine} from \"somewhere\";"
-    , """import   Test,   {   ugly   }  from "elsewhere";"""
-    , """import This,
-    { and,
-    more,
-    imports } from "elsewhere";"""
-    ]
-
-
-incorrectImports : List String
-incorrectImports =
-    [ "import {} Test from \"wherever\""
-    , "import { test }, { other} from \"wherever\""
-    , "import *as Test from \"who\""
-    ]
-
-
-testLine =
-    """import { errorAwareRequest } from "../utils/error";
-import axios from "axios";
-import get from "lodash/get";
-import useAnalytics from "../hooks/useAnalytics";
-import useAuthorization from "../hooks/useAuthorization";
-import useSWR from "swr";
-import {
-  API_BASE_PATH,
-  asyncRequest,
-  matchMutate,
-  useSteampipeSWR,
-  withIfMatchHeaderConfig,
-} from "./index";
-import { Identity, IdentityType } from "../types/identity";
-import { Connection } from "../types/connection";
-import {
-  Workspace,
-  WorkspaceConnectionAssociation,
-  WorkspaceMod,
-  WorkspaceModInstall,
-  WorkspaceModVariable,
-  WorkspaceUpdatePayload,
-} from "../types/workspace";"""
-
-
-testLine2 =
-    """import {
-  Workspace,
-  WorkspaceConnectionAssociation,
-  WorkspaceMod,
-  WorkspaceModInstall,
-  WorkspaceModVariable,
-  WorkspaceUpdatePayload,
-} from "apple.js";"""
-
-
-importLines =
-    String.join "\n" correctImports
-
-
-result =
-    [ [ "Worker" ]
-    , [ "error" ]
-    ]
-        |> List.sortBy
-            (\x ->
-                case List.head x of
-                    Just str ->
-                        String.toLower str
-
-                    Nothing ->
-                        ""
-            )

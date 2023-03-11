@@ -33,12 +33,14 @@ import {
   WorkspaceModVariable,
   WorkspaceUpdatePayload,
 } from "../types/workspace";
+import "../styles.css";
 """
 
 
 orderedImports : String
 orderedImports =
-    """import axios from "axios";
+    """import "../styles.css";
+import axios from "axios";
 import get from "lodash/get";
 import useAnalytics from "../hooks/useAnalytics";
 import useAuthorization from "../hooks/useAuthorization";
@@ -177,7 +179,7 @@ import useAuthorization from "../../../hooks/useAuthorization";
 import useIdentityConnectionTest from "../../../hooks/useIdentityConnectionTest";"""
                 in
                 input
-                    |> Sorter.sortImportsString "asterix,objects,defaults"
+                    |> Sorter.sortImportsString "asterix,objects,none,defaults"
                     |> Expect.equal (Ok output)
         , test "more" <|
             \_ ->
@@ -194,13 +196,15 @@ import { AuthenticationProvider } from "./hooks/useAuthentication";
 import { FullHeightThemeWrapper, ThemeProvider } from "./hooks/useTheme";
 import { Helmet } from "react-helmet";
 import { SWRConfig } from "swr";
+import "something";
 import { BrowserRouter, useNavigate, useRoutes } from "react-router-dom";
 import { useEffect } from "react";
 import { Toast } from "./components/Toast";
 """
 
                     output =
-                        """import axios from "axios";
+                        """import "something";
+import axios from "axios";
 import ErrorBoundaryModal from "./components/ErrorBoundaryModal";
 import routeConfig from "./config/routes";
 import { AnalyticsProvider } from "./hooks/useAnalytics";
@@ -270,11 +274,20 @@ parserOrderFromStringTest =
             \_ ->
                 let
                     str =
-                        "defaults,objects,asterix"
+                        "defaults,objects,asterix,none"
                 in
                 str
                     |> Sorter.parseOrderFromString
-                    |> Expect.equal (Ok [ Sorter.DefaultImportType, Sorter.ObjectImportType, Sorter.AsterixImportType ])
+                    |> Expect.equal (Ok [ Sorter.DefaultImportType, Sorter.ObjectImportType, Sorter.AsterixImportType, Sorter.SourceImportType ])
+        , test "changed order" <|
+            \_ ->
+                let
+                    str =
+                        "objects,asterix,defaults,none"
+                in
+                str
+                    |> Sorter.parseOrderFromString
+                    |> Expect.equal (Ok [ Sorter.ObjectImportType, Sorter.AsterixImportType, Sorter.DefaultImportType, Sorter.SourceImportType ])
         , test "empty string" <|
             \_ ->
                 ""
