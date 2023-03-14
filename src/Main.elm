@@ -56,10 +56,26 @@ update msg model =
                     OptionsDecoder.parseString str
 
                 file =
-                    OptionsDecoder.getValue "file" options |> Maybe.map String.trim
+                    OptionsDecoder.getValue "file" options
+                        |> (\f ->
+                                case f of
+                                    OptionsDecoder.Str fpath ->
+                                        Just (String.trim fpath)
+
+                                    _ ->
+                                        Nothing
+                           )
 
                 sortOrder =
-                    OptionsDecoder.getValue "sort" options |> Maybe.withDefault ""
+                    OptionsDecoder.getValue "sort" options
+                        |> (\so ->
+                                case so of
+                                    OptionsDecoder.Str str_ ->
+                                        String.trim str_
+
+                                    _ ->
+                                        ""
+                           )
             in
             case file of
                 Nothing ->

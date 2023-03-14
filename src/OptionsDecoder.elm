@@ -32,6 +32,7 @@ splitBy fn str =
 type OptionValue
     = Str String
     | Boolean Bool
+    | DoesNotExist
 
 
 type alias Options =
@@ -73,29 +74,7 @@ spaceOrEqual =
     \s -> s == " " || s == "="
 
 
-getValue : String -> Options -> Maybe String
+getValue : String -> Options -> OptionValue
 getValue key opts =
     Dict.get key opts
-        |> Maybe.andThen
-            (\v ->
-                case v of
-                    Str str ->
-                        Just str
-
-                    Boolean _ ->
-                        Nothing
-            )
-
-
-getBoolean : String -> Options -> Maybe Bool
-getBoolean key opts =
-    Dict.get key opts
-        |> Maybe.andThen
-            (\v ->
-                case v of
-                    Str _ ->
-                        Nothing
-
-                    Boolean val ->
-                        Just val
-            )
+        |> Maybe.withDefault DoesNotExist
