@@ -1,6 +1,6 @@
 port module Main exposing (..)
 
-import OptionsDecoder
+import CLIOptionsParser
 import Sorter exposing (sortImportsString)
 import Task
 
@@ -52,30 +52,11 @@ update msg model =
 
         ReceiveCLIString str ->
             let
-                options =
-                    OptionsDecoder.parseString str
-
                 file =
-                    OptionsDecoder.getValue "file" options
-                        |> (\f ->
-                                case f of
-                                    OptionsDecoder.Str fpath ->
-                                        Just (String.trim fpath)
-
-                                    _ ->
-                                        Nothing
-                           )
+                    CLIOptionsParser.getStringValue "file" str |> Maybe.map String.trim
 
                 sortOrder =
-                    OptionsDecoder.getValue "sort" options
-                        |> (\so ->
-                                case so of
-                                    OptionsDecoder.Str str_ ->
-                                        String.trim str_
-
-                                    _ ->
-                                        ""
-                           )
+                    CLIOptionsParser.getStringValue "sort" str |> Maybe.map String.trim |> Maybe.withDefault ""
             in
             case file of
                 Nothing ->
