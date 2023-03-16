@@ -30,6 +30,6 @@ const main = () => {
     }
   });
 
-  app.ports.nodeToElm.send(["cli_input", process.argv.slice(2).join(" ")]);
+  app.ports.nodeToElm.send(["cli_input", process.argv.join(" ")]);
 };
 main();
