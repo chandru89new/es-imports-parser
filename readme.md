@@ -54,7 +54,6 @@ import {
 These files contain the logic of the program:
 
 ```
-- src/OptionsDecoder.elm # logic to parse CLI string 
 - src/ImportParser.elm # the parsing logic
 - src/Sorter.elm # the sorting logic
 - src/Main.elm # the actual app which talks to the node as a Platform.worker - (https://package.elm-lang.org/packages/elm/core/latest/Platform#worker)
@@ -66,3 +65,6 @@ I am assuming you have [npx](https://www.npmjs.com/package/npx) installed becaus
 ``` 
 $ make test
 ```
+
+**Note:**
+Because [`Parser.deadEndsToString`](https://github.com/elm/parser/blob/master/src/Parser.elm#L169) is a TODO at this time, the script uses `Debug.toString` and therefore compiles only in DEV mode.
