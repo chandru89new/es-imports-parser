@@ -20,7 +20,7 @@ defaultImportStringParser =
     let
         innerParser =
             succeed identity
-                |. chompWhile Char.isAlphaNum
+                |. chompWhile (\c -> Char.isAlphaNum c || c == '_')
                 |. spaces
                 |> getChompedString
                 |> andThen (\s -> succeed (String.replace " " "" s))
