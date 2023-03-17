@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Array
 import CLIOptionsParser
 import Harbor as H
 import HarborGenerated as H
@@ -70,12 +71,15 @@ update msg model =
             let
                 sortedImports =
                     sortImportsString model.sortOrder model.fileContents
+
+                newFileContents =
+                    Result.map (\( c, n ) -> replaceLines model.fileContents c n) sortedImports
             in
-            case sortedImports of
-                Ok ( contents, rows ) ->
+            case newFileContents of
+                Ok contents ->
                     ( model
                     , Cmd.batch
-                        [ H.send <| H.WriteToFile (H.FilePath model.filePath) contents rows
+                        [ H.send <| H.WriteToFile (H.FilePath "./test.tsx") contents
                         ]
                     )
 
@@ -88,3 +92,18 @@ subscriptions _ =
     Sub.batch
         [ H.harborSubscription |> Sub.map PortMsg
         ]
+
+
+replaceLines : String -> String -> Int -> String
+replaceLines originalContent newContent numOfLines =
+    originalContent
+        |> String.lines
+        |> Array.fromList
+        |> (\xs ->
+                Array.slice numOfLines (Array.length xs) xs
+           )
+        |> Array.toList
+        |> (\restAsList ->
+                List.concat [ String.lines newContent, [ "" ], restAsList ]
+           )
+        |> String.join "\n"

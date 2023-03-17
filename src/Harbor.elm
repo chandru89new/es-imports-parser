@@ -13,7 +13,7 @@ type PortInMsg
 type PortOutMsg
     = LogToConsole String
     | ReadFile FileName
-    | WriteToFile FileName String Int
+    | WriteToFile FileName String
 
 
 type FileName
@@ -30,11 +30,10 @@ sendHandler msg =
         LogToConsole str ->
             Encode.string str
 
-        WriteToFile (FilePath fp) str int ->
+        WriteToFile (FilePath fp) str ->
             Encode.object
                 [ ( "FilePath", Encode.string fp )
                 , ( "content", Encode.string str )
-                , ( "numLines", Encode.int int )
                 ]
 
         ReadFile (FilePath str) ->

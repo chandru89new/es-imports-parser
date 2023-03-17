@@ -19,7 +19,7 @@ send msg =
                 H.LogToConsole _ ->
                     "LogToConsole"
 
-                H.WriteToFile _ _ _ ->
+                H.WriteToFile _ _ ->
                     "WriteToFile"
 
                 H.ReadFile _ ->

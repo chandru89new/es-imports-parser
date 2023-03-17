@@ -1,11 +1,8 @@
 const fs = require("fs");
 
-const writeFile = ({ FilePath, content, numLines }) => {
+const writeFile = ({ FilePath, content }) => {
   try {
-    const raw = fs.readFileSync(FilePath, "utf-8");
-    const split = raw.split("\n").slice(numLines).join("\n");
-    const final = content + "\n\n" + split;
-    fs.writeFileSync(FilePath, final);
+    fs.writeFileSync(FilePath, content);
     console.log("Done.");
   } catch (e) {
     console.log(e.toString());
