@@ -22,6 +22,7 @@ jobs:
       - name: Install elm
         run: |
           npm i -g elm elm-test
-          make build
+      - name: Test building the project
+        run: make
       - name: Run tests
         run: make test

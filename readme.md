@@ -4,7 +4,7 @@ Experimental ES6 import order sorter. Built as a way to understand the [Elm Pars
 
 **Warning**: This script over-writes files.
 
-## To run from source
+## To run
 
 ```
 # install elm globally so you can compile the
