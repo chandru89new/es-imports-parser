@@ -1,5 +1,17 @@
 const fs = require("fs");
 
+const writeFile = ({ FilePath, content, numLines }) => {
+  try {
+    const raw = fs.readFileSync(FilePath, "utf-8");
+    const split = raw.split("\n").slice(numLines).join("\n");
+    const final = content + "\n\n" + split;
+    fs.writeFileSync(FilePath, final);
+    console.log("Done.");
+  } catch (e) {
+    console.log(e.toString());
+  }
+};
+
 const main = () => {
   // init Elm app
   const { Elm } = require("./main.js");
@@ -7,20 +19,24 @@ const main = () => {
     flags: null,
   });
 
-  app.ports.elmToNode.subscribe(([type, data]) => {
+  app.ports.fromElm.subscribe(([type, data]) => {
     switch (type) {
-      case "log":
+      case "LogToConsole":
         console.log(`\n${data}\n`);
         break;
-      case "get_file_contents":
+      case "ReadFile":
         try {
           const d = fs.readFileSync(data, "utf-8");
-          app.ports.nodeToElm.send(["file_contents", d]);
+          app.ports.toElm.send(["ReceiveFileContents", d]);
         } catch (e) {
           console.log(
             `\nCould not read the contents of the file: ${data}. ${e.toString()}`
           );
         }
+        break;
+      case "WriteToFile":
+        // console.log(data);
+        writeFile(data);
         break;
       default:
         console.log(
@@ -30,6 +46,6 @@ const main = () => {
     }
   });
 
-  app.ports.nodeToElm.send(["cli_input", process.argv.join(" ")]);
+  app.ports.toElm.send(["ReceiveCLICommand", process.argv.join(" ")]);
 };
 main();

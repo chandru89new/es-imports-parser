@@ -64,7 +64,7 @@ tests =
             \_ ->
                 unorderedImports
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok orderedImports)
+                    |> Expect.equal (Ok ( orderedImports, 25 ))
         , test "imports test failing parsing stage" <|
             \_ ->
                 incorrectImports
@@ -126,7 +126,7 @@ import { validationErrorIcon } from "../../../constants/icons";"""
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 25 ))
         , test "test with different order (asterix,objects,defaults)" <|
             \_ ->
                 let
@@ -180,7 +180,7 @@ import useIdentityConnectionTest from "../../../hooks/useIdentityConnectionTest"
                 in
                 input
                     |> Sorter.sortImportsString "asterix,objects,none,defaults"
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 25 ))
         , test "test with spaces between imports" <|
             \_ ->
                 let
@@ -225,7 +225,7 @@ import { useEffect } from "react";"""
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 20 ))
         , test "test with spaces between imports and content between imports" <|
             \_ ->
                 let
@@ -272,7 +272,7 @@ import { useEffect } from "react";"""
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 22 ))
         ]
 
 
@@ -365,7 +365,7 @@ import B from "B";"""
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 3 ))
         , test "statement immediately after imports, no new line at the end" <|
             \_ ->
                 let
@@ -379,7 +379,7 @@ console.log(A);"""
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 3 ))
         , test "statements between imports, with spaces between, no newline at end" <|
             \_ ->
                 let
@@ -398,7 +398,7 @@ import Something from "A";"""
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 3 ))
         , test "space between imports. new line at the end" <|
             \_ ->
                 let
@@ -415,7 +415,7 @@ import B from "B";"""
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 5 ))
         , test "statement immediately after imports, new lines at the end" <|
             \_ ->
                 let
@@ -431,7 +431,7 @@ console.log(A);
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 3 ))
         , test "statements between imports, with spaces between, newlines at end" <|
             \_ ->
                 let
@@ -452,5 +452,5 @@ import Something from "A";"""
                 in
                 input
                     |> Sorter.sortImportsString ""
-                    |> Expect.equal (Ok output)
+                    |> Expect.equal (Ok ( output, 8 ))
         ]

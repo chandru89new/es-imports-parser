@@ -107,40 +107,47 @@ importLineParser =
         |. symbol ";"
 
 
-importsParser : Parser (List ImportLine)
+type alias State =
+    ( List ImportLine, Int )
+
+
+importsParser : Parser State
 importsParser =
     let
-        step : List ImportLine -> Parser (Step (List ImportLine) (List ImportLine))
-        step acc =
+        step : State -> Parser (Step State State)
+        step ( acc, line ) =
             let
-                finish entry f =
+                finish entry ( f, row ) =
                     case entry of
                         Just val ->
-                            f (val :: acc)
+                            f ( val :: acc, row )
 
                         Nothing ->
-                            f acc
+                            f ( acc, row )
             in
             oneOf
                 [ succeed finish
                     |= map Just importLineParser
                     |. spacesOnly
                     |= oneOf
-                        [ succeed Loop
+                        [ succeed (\int -> ( Loop, int ))
                             |. symbol "\n"
-                        , succeed (Done << List.reverse)
+                            |= getRow
+                        , succeed ( Done, line )
                             |. end
                         ]
-                , succeed (Done <| List.reverse acc)
+                , succeed
+                    (Done <| ( List.reverse acc, line ))
                     |. end
-                , succeed (\_ -> finish Nothing Loop)
+                , succeed
+                    (\_ -> finish Nothing ( Loop, line ))
                     |= symbol "\n"
-                , succeed (\_ -> finish Nothing Loop)
+                , succeed (\_ -> finish Nothing ( Loop, line ))
                     |= chompIf (\c -> not <| c == '\n')
                     |. spaces
                 ]
     in
-    loop [] step
+    loop ( [], 0 ) step
 
 
 spacesOnly : Parser ()

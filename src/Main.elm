@@ -1,6 +1,8 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import CLIOptionsParser
+import Harbor as H
+import HarborGenerated as H
 import Sorter exposing (sortImportsString)
 import Task
 
@@ -15,8 +17,7 @@ main =
 
 type Msg
     = NoOp
-    | NodeToElm ( String, String )
-    | ReceiveCLIString String
+    | PortMsg H.PortInMsg
     | SortImports
 
 
@@ -39,34 +40,31 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        NodeToElm ( type_, data ) ->
-            case type_ of
-                "cli_input" ->
-                    ( { model | rawInput = data }, Task.perform ReceiveCLIString (Task.succeed data) )
+        PortMsg portInMsg ->
+            case portInMsg of
+                H.ReceiveCLICommand cmd ->
+                    let
+                        file =
+                            CLIOptionsParser.getStringValue "file" cmd |> Maybe.map String.trim
 
-                "file_contents" ->
-                    ( { model | fileContents = data }, Task.perform (\_ -> SortImports) (Task.succeed ()) )
+                        sortOrder =
+                            CLIOptionsParser.getStringValue "sort" cmd |> Maybe.map String.trim |> Maybe.withDefault ""
+                    in
+                    case file of
+                        Nothing ->
+                            ( model, H.send <| H.LogToConsole "I need a file name mentioned with the --file flag to work." )
 
-                _ ->
-                    ( model, elmToNode ( "log", "I dont know what to do with this type of message coming from Node: type = " ++ type_ ) )
+                        Just "" ->
+                            ( model, H.send <| H.LogToConsole "--file cannot be empty string. I need a valid file name to work with this." )
 
-        ReceiveCLIString str ->
-            let
-                file =
-                    CLIOptionsParser.getStringValue "file" str |> Maybe.map String.trim
+                        Just f ->
+                            ( { model | filePath = f, sortOrder = sortOrder }, H.send <| H.ReadFile (H.FilePath f) )
 
-                sortOrder =
-                    CLIOptionsParser.getStringValue "sort" str |> Maybe.map String.trim |> Maybe.withDefault ""
-            in
-            case file of
-                Nothing ->
-                    ( model, elmToNode ( "log", "I need a file name mentioned with the --file flag to work." ) )
+                H.ReceiveFileContents contents ->
+                    ( { model | fileContents = contents }, Task.perform (\_ -> SortImports) (Task.succeed ()) )
 
-                Just "" ->
-                    ( model, elmToNode ( "log", "--file cannot be empty string. I need a valid file name to work with this." ) )
-
-                Just f ->
-                    ( { model | filePath = f, sortOrder = sortOrder }, elmToNode ( "get_file_contents", f ) )
+                H.Unknown msgType ->
+                    ( model, H.send <| H.LogToConsole ("I receive a command from Node that I did not understand: " ++ msgType) )
 
         SortImports ->
             let
@@ -74,24 +72,19 @@ update msg model =
                     sortImportsString model.sortOrder model.fileContents
             in
             case sortedImports of
-                Ok str ->
-                    ( model, elmToNode ( "log", str ) )
+                Ok ( contents, rows ) ->
+                    ( model
+                    , Cmd.batch
+                        [ H.send <| H.WriteToFile (H.FilePath model.filePath) contents rows
+                        ]
+                    )
 
                 Err e ->
-                    ( model, elmToNode ( "log", e ) )
+                    ( model, H.send <| H.LogToConsole e )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
-        [ nodeToElm NodeToElm
+        [ H.harborSubscription |> Sub.map PortMsg
         ]
-
-
-port logToConsole : String -> Cmd msg
-
-
-port elmToNode : ( String, String ) -> Cmd msg
-
-
-port nodeToElm : (( String, String ) -> msg) -> Sub msg

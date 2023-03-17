@@ -1,8 +1,8 @@
 # ES6 Imports Sorter
 
-Experimental ES6 import order sorter. Very limited / constricted functionality. Built as a way to understand the [Elm Parser](https://package.elm-lang.org/packages/elm/parser/latest/Parser).
+Experimental ES6 import order sorter. Built as a way to understand the [Elm Parser](https://package.elm-lang.org/packages/elm/parser/latest/Parser).
 
-At this time, it does not modify the file. It simply outputs the correct import order string (that you can copy/paste).
+**Warning**: This script over-writes files.
 
 ## To run from source
 
@@ -47,23 +47,6 @@ import {
   B,
   C,
 } from "D";
-```
-
-## Modify / Test
-
-These files contain the logic of the program:
-
-```
-- src/ImportParser.elm # the parsing logic
-- src/Sorter.elm # the sorting logic
-- src/Main.elm # the actual app which talks to the node as a Platform.worker - (https://package.elm-lang.org/packages/elm/core/latest/Platform#worker)
-```
-
-Tests are in `src/Tests.elm`. To run tests:
-
-I am assuming you have [npx](https://www.npmjs.com/package/npx) installed because this uses it.
-``` 
-$ make test
 ```
 
 **Note:**

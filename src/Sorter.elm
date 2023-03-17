@@ -151,7 +151,7 @@ sortObjects xs =
         sortedInternals
 
 
-sortImportsString : String -> String -> Result String String
+sortImportsString : String -> String -> Result String ( String, Int )
 sortImportsString ordStr str =
     let
         ord =
@@ -163,7 +163,15 @@ sortImportsString ordStr str =
                 str
                     |> Parser.run importsParser
                     |> Result.mapError Debug.toString
-                    |> Result.map (sortList order >> List.map toString >> String.join "\n")
+                    |> Result.map
+                        (\( lines, numLines ) ->
+                            lines
+                                |> sortList order
+                                |> List.map toString
+                                |> String.join "\n"
+                                |> (\res -> ( res, numLines ))
+                        )
+             -- |> Result.map (sortList order >> List.map toString >> String.join "\n")
             )
 
 
@@ -203,8 +211,11 @@ parseOrderFromString str =
                         Nothing
             )
         |> (\xs ->
-                if List.isEmpty xs then
+                if List.isEmpty xs && String.length str == 0 then
                     Ok defaultSortOrder
+
+                else if String.length str == 0 then
+                    Err "Sort string not valid. If you specify a sort order, you need to mention all of the types (and exactly once). e.g. \"objects,asterix,defaults,none\""
 
                 else if
                     List.length xs
