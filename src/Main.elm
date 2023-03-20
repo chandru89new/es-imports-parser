@@ -23,8 +23,7 @@ type Msg
 
 
 type alias Model =
-    { rawInput : String
-    , filePath : String
+    { filePath : String
     , fileContents : String
     , sortOrder : String
     , dryRun : Bool
@@ -33,8 +32,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { rawInput = ""
-      , filePath = ""
+    ( { filePath = ""
       , fileContents = ""
       , sortOrder = ""
       , dryRun = False
