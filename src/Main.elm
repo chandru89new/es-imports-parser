@@ -27,12 +27,20 @@ type alias Model =
     , filePath : String
     , fileContents : String
     , sortOrder : String
+    , dryRun : Bool
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model "" "" "" "", Cmd.none )
+    ( { rawInput = ""
+      , filePath = ""
+      , fileContents = ""
+      , sortOrder = ""
+      , dryRun = False
+      }
+    , Cmd.none
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -50,6 +58,9 @@ update msg model =
 
                         sortOrder =
                             CLIOptionsParser.getStringValue "sort" cmd |> Maybe.map String.trim |> Maybe.withDefault ""
+
+                        dryRun =
+                            CLIOptionsParser.getBooleanValue "dry-run" cmd |> Maybe.withDefault False
                     in
                     case file of
                         Nothing ->
@@ -59,7 +70,7 @@ update msg model =
                             ( model, H.send <| H.LogToConsole "--file cannot be empty string. I need a valid file name to work with this." )
 
                         Just f ->
-                            ( { model | filePath = f, sortOrder = sortOrder }, H.send <| H.ReadFile (H.FilePath f) )
+                            ( { model | dryRun = dryRun, filePath = f, sortOrder = sortOrder }, H.send <| H.ReadFile (H.FilePath f) )
 
                 H.ReceiveFileContents contents ->
                     ( { model | fileContents = contents }, Task.perform (\_ -> SortImports) (Task.succeed ()) )
@@ -77,9 +88,17 @@ update msg model =
             in
             case newFileContents of
                 Ok contents ->
+                    let
+                        commandToRun =
+                            if not model.dryRun then
+                                H.WriteToFile (H.FilePath model.filePath)
+
+                            else
+                                H.LogToConsole
+                    in
                     ( model
                     , Cmd.batch
-                        [ H.send <| H.WriteToFile (H.FilePath "./test.tsx") contents
+                        [ H.send <| commandToRun contents
                         ]
                     )
 

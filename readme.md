@@ -49,5 +49,15 @@ import {
 } from "D";
 ```
 
+## Dry-run
+
+Don't want the script to "fix"/overwrite files? Use the `--dry-run` flag.
+
+```bash
+node index.js --file /some/file.js --sort "defaults,asterix,objects,none" --dry-run
+```
+
+This will output the final "fixed" content to the console.
+
 **Note:**
 Because [`Parser.deadEndsToString`](https://github.com/elm/parser/blob/master/src/Parser.elm#L169) is a TODO at this time, the script uses `Debug.toString` and therefore compiles only in DEV mode.
