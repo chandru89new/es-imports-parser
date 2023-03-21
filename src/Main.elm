@@ -59,16 +59,23 @@ update msg model =
 
                         dryRun =
                             CLIOptionsParser.getBooleanValue "dry-run" cmd |> Maybe.withDefault False
+
+                        help =
+                            CLIOptionsParser.getBooleanValue "help" cmd |> Maybe.withDefault False
                     in
-                    case file of
-                        Nothing ->
-                            ( model, H.send <| H.LogToConsole "I need a file name mentioned with the --file flag to work." )
+                    if help == True then
+                        ( model, H.send <| H.LogToConsole helpContent )
 
-                        Just "" ->
-                            ( model, H.send <| H.LogToConsole "--file cannot be empty string. I need a valid file name to work with this." )
+                    else
+                        case file of
+                            Nothing ->
+                                ( model, H.send <| H.LogToConsole "I need a file name mentioned with the --file flag to work." )
 
-                        Just f ->
-                            ( { model | dryRun = dryRun, filePath = f, sortOrder = sortOrder }, H.send <| H.ReadFile (H.FilePath f) )
+                            Just "" ->
+                                ( model, H.send <| H.LogToConsole "--file cannot be empty string. I need a valid file name to work with this." )
+
+                            Just f ->
+                                ( { model | dryRun = dryRun, filePath = f, sortOrder = sortOrder }, H.send <| H.ReadFile (H.FilePath f) )
 
                 H.ReceiveFileContents contents ->
                     ( { model | fileContents = contents }, Task.perform (\_ -> SortImports) (Task.succeed ()) )
@@ -124,3 +131,20 @@ replaceLines originalContent newContent numOfLines =
                 List.concat [ String.lines newContent, [ "" ], restAsList ]
            )
         |> String.join "\n"
+
+
+helpContent =
+    """es-sorter
+
+Usage:
+--help
+Show this help-text.
+
+--file <file_path_with_ext>
+Sort the given file. Overwrites the file's import lines. Uses default sort-order (defaults,asterix,objects,none).   
+
+--sort-order <sort-order>
+Define a sort order. Has to contain all four types: default, objects, asterix, none. Read the repo documentation for more info. 
+
+--dry-run
+Run the script but do not overwrite the file. Instead, print the output to the console/stdout."""

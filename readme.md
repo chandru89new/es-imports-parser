@@ -13,6 +13,8 @@ $ make
 
 # now just run the index.js file in node
 $ node index.js --file <file_path>
+
+$ node index.js --help # show help/usage information.
 ```
 
 ## Custom sort order
