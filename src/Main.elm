@@ -89,7 +89,15 @@ update msg model =
                     sortImportsString model.sortOrder model.fileContents
 
                 newFileContents =
-                    Result.map (\( c, n ) -> replaceLines model.fileContents c n) sortedImports
+                    Result.map
+                        (\( c, n ) ->
+                            if String.length c > 0 then
+                                replaceLines model.fileContents c n
+
+                            else
+                                model.fileContents
+                        )
+                        sortedImports
             in
             case newFileContents of
                 Ok contents ->
